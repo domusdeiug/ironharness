@@ -1,0 +1,90 @@
+# Thea harness pipeline configuration.
+#
+# Copy to config.yaml and adjust. Secrets do NOT go here — see .env.example.
+# Everything here is behavior a human should be able to tune without a code
+# change (model IDs, retry caps, feature flags). Domain data (professions,
+# tool schemas) lives in the `professions` table and each profession's
+# module, not here.
+
+classification:
+  # OpenRouter model id used for Stage 1 (profession selection + optional
+  # implicit-feedback inference). Cheaper/smaller model is fine here —
+  # OPEN item in handoff: verify structured-output support before relying
+  # on this in production.
+  model: "openai/gpt-4.1-mini"
+
+  # Cheaper model used for the second call when combined_call_mode is false.
+  # This job only compares two turns of text — it doesn't need to reason
+  # about tools/professions, so it can be smaller than the classification
+  # model itself.
+  feedback_model: "openai/gpt-4.1-nano"
+
+  # true  = one call returns both `professions` and `previous_turn_feedback`.
+  # false = classify.py makes two independent calls (profession selection
+  #         is byte-for-byte the same prompt in both modes).
+  # Handoff OPEN item: run the comparison test before trusting `true` in
+  # production. Defaults to true per the handoff's stated default.
+  combined_call_mode: true
+
+  max_professions_per_request: 3
+
+plan:
+  # PLAN is pinned to a specific verified model, not routed dynamically —
+  # per the handoff, this should be a strong/capable model since it fixes
+  # the request's scope.
+  model: "anthropic/claude-sonnet-4.5"
+
+  # Cap on re-prompting PLAN after tool_args schema validation failure,
+  # before failing the request at planning time.
+  plan_validation_max_attempts: 3
+
+  # OPEN item in handoff: no default step-count cap yet — needs a first
+  # real profession built to have a realistic sense of step counts. Set to
+  # null (no cap) until then; enforce in code once a number is chosen.
+  max_plan_steps: null
+
+action:
+  # Total attempts per step: 1 initial + up to N-1 retries.
+  max_attempts_per_step: 3
+
+  # Attempt 1 is always a logic-only retry decision (no model call).
+  # Attempts 2..max_attempts_per_step use this cheap model to propose
+  # adjusted args.
+  retry_model: "openai/gpt-4.1-mini"
+
+  # Diagnostic tool calls available to the retry model, per retry attempt
+  # (attempts 2 and 3 -> 2 attempts * this cap = hard ceiling below).
+  max_diagnostic_calls_per_attempt: 3
+  # Hard ceiling across the whole step's retries. Kept as an explicit,
+  # separately-enforced number (not just derived) so the code has one
+  # obvious place to check against, per the handoff's "enforced in code"
+  # language.
+  max_diagnostic_calls_per_step: 6
+
+  max_replans_per_request: 3
+
+synthesis:
+  model: "anthropic/claude-sonnet-4.5"
+
+evaluation:
+  # Model used for step-result evaluation-by-model-judgment (as opposed to
+  # a pure code check). Per-profession decision on which steps need this —
+  # this is just the default when a profession asks for a model judgment.
+  step_eval_model: "openai/gpt-4.1-mini"
+
+  # Semantic memory distillation.
+  distillation_model: "openai/gpt-4.1-mini"
+  distillation_cadence: "nightly"  # OPEN in handoff: not fixed yet.
+
+retrieval:
+  # top-K semantic memories retrieved per request, scoped to the requesting
+  # user, plus optionally that user's single most recent raw episode.
+  semantic_top_k: 3
+  include_latest_episode: true
+
+logging:
+  # Keep logs for easy debugging — cross-cutting requirement from the
+  # handoff. This just controls verbosity; actual persistence is via
+  # standard structured logging to stdout (captured by Railway).
+  level: "INFO"
+  log_model_prompts: false  # set true only for local debugging; prompts may contain user data
