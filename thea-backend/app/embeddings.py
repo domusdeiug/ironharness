@@ -1,13 +1,6 @@
 """
 Embedding generation for Stage 5 (episodic/semantic memory) and Stage 1/3's
 retrieval lookups.
-
-The schema fixes `vector(1024)` for both `episodic_memory.request_embedding`
-and `semantic_memory.pattern_embedding`, so whatever model is used here MUST
-emit 1024-dim vectors. Default below (`mixedbread-ai/mxbai-embed-large-v1`)
-is a real 1024-dim model available via OpenRouter-compatible /embeddings
-providers; swap in .env-driven config if a different provider is chosen —
-just keep the dimension fixed at 1024 or migrate the column.
 """
 
 from __future__ import annotations
@@ -17,7 +10,7 @@ import httpx
 from app.config import get_settings
 
 EMBEDDING_DIM = 1024
-_EMBEDDING_MODEL = "mixedbread-ai/mxbai-embed-large-v1"
+_EMBEDDING_MODEL = "baai/bge-m3"
 
 
 async def embed_text(text: str) -> list[float]:
