@@ -184,12 +184,26 @@ async def process_request(*, request_id: uuid.UUID) -> None:
     synthesize.finalize_request(request_id=request_id, final_response=final_response, incomplete=incomplete)
 
     # ---- Stage 5: EVALUATION AND MEMORIZATION ----
-    await evaluate.write_episodic_memory(
-        request_id=request_id,
-        user_id=user_id,
-        request_text=request_text,
-        profession_ids=profession_ids,
-        outcomes=all_outcomes,
-        final_response=final_response,
-        incomplete=incomplete,
-    )
+    # Stage 4 has already committed a successful, user-facing answer
+    # (status=done, final_response set) by this point. A failure here is
+    # best-effort bookkeeping (episodic memory for future retrieval/
+    # feedback) — it must never claw back an already-successful request.
+    # Caught locally so it never reaches worker.py's crash-recovery net,
+    # which would otherwise overwrite status/final_response with a
+    # generic failure message.
+    try:
+        await evaluate.write_episodic_memory(
+            request_id=request_id,
+            user_id=user_id,
+            request_text=request_text,
+            profession_ids=profession_ids,
+            outcomes=all_outcomes,
+            final_response=final_response,
+            incomplete=incomplete,
+        )
+    except Exception:
+        logger.exception(
+            "Stage 5 (episodic memory write) failed for request_id=%s; "
+            "request remains 'done' with its synthesized answer intact.",
+            request_id,
+        )
