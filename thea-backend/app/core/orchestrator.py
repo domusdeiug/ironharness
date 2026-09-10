@@ -15,11 +15,11 @@ import logging
 import uuid
 from typing import Any
 
-from app.config import cfg
-from app.db import get_service_client
-from app.models import RequestStatus
-from app.stages import classify, evaluate, plan, synthesize
-from app.stages.action import BlockingStepFailed, StepOutcome, run_action_stage
+from app.infra.config import cfg
+from app.infra.db import get_service_client
+from app.infra.models import RequestStatus
+from app.core.stages import classify, evaluate, plan, synthesize
+from app.core.stages.action import BlockingStepFailed, StepOutcome, run_action_stage
 
 logger = logging.getLogger("thea.orchestrator")
 

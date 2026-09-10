@@ -1,7 +1,7 @@
 """
 `xlsx` profession — reads and edits spreadsheet (.xlsx) files.
 
-Follows the same registration pattern as `app/professions/echo/tools.py`:
+Follows the same registration pattern used across app/professions/*/tools.py:
 a `tools.py` that registers each tool on import via `register_tool`, with
 narrow Pydantic args schemas and async handlers returning
 `ToolExecutionResult`. Seed this profession's row via
@@ -37,7 +37,7 @@ import openpyxl
 from openpyxl.chart import BarChart, LineChart, PieChart, Reference
 from pydantic import BaseModel, Field
 
-from app.models import ToolExecutionResult
+from app.infra.models import ToolExecutionResult
 from app.tools.registry import register_tool
 
 

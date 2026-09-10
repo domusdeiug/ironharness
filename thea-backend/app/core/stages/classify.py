@@ -24,10 +24,10 @@ import logging
 import uuid
 from dataclasses import dataclass
 
-from app.config import cfg
-from app.db import get_service_client
-from app.llm import StructuredCallError, call_structured
-from app.models import (
+from app.infra.config import cfg
+from app.infra.db import get_service_client
+from app.infra.llm import StructuredCallError, call_structured
+from app.infra.models import (
     ClassificationOutput,
     FeedbackOnlyOutput,
     FeedbackSignalType,

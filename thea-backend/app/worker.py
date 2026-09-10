@@ -7,6 +7,10 @@ request." Running the whole pipeline as one job keeps the status-transition
 logic in one place (orchestrator.py) and means the HTTP layer only ever
 does a fast enqueue + row read.
 
+Also responsible for keeping the `professions` table in sync with
+whatever is registered in code -- see the sync_professions_to_db() call
+below and app/professions/sync.py.
+
 Run with:  rq worker thea-pipeline --url $REDIS_URL
 (after `python -m app.worker` has registered tool imports — see below).
 """
@@ -18,6 +22,7 @@ import logging
 import uuid
 
 from app.tools import load_all_tools
+from app.professions.sync import sync_professions_to_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("thea.worker")
@@ -28,10 +33,21 @@ logger = logging.getLogger("thea.worker")
 # imported by the RQ worker process or directly for local testing.
 load_all_tools()
 
+# Auto-populate the `professions` table from whatever is registered in
+# code (see app/professions/_registry.py and each profession's
+# __init__.py). This means adding a profession is genuinely just "add a
+# folder" -- the next worker restart (or a manual `python -m
+# scripts.seed_professions` if you don't want to wait for that) is what
+# gets it into the DB, with no separate seeding step to remember.
+# Deliberately not wrapped in try/except: a profession whose PROFESSION_META
+# references an unregistered tool is a real bug, and this should fail the
+# worker's startup loudly rather than silently run with a broken catalog.
+sync_professions_to_db()
+
 
 def run_pipeline_job(request_id_str: str) -> None:
     """Synchronous entry point RQ calls. Bridges to the async orchestrator."""
-    from app.orchestrator import process_request
+    from app.core.orchestrator import process_request
 
     request_id = uuid.UUID(request_id_str)
     logger.info("Starting pipeline for request_id=%s", request_id)
@@ -50,7 +66,7 @@ def _mark_failed_on_crash(request_id: uuid.UUID) -> None:
     make sure the request doesn't sit stuck in an in-progress status
     forever with no explanation to the user."""
     try:
-        from app.db import get_service_client
+        from app.infra.db import get_service_client
 
         get_service_client().table("requests").update(
             {
@@ -68,7 +84,7 @@ def enqueue_pipeline_job(request_id: uuid.UUID):
     from redis import Redis
     from rq import Queue
 
-    from app.config import get_settings
+    from app.infra.config import get_settings
 
     settings = get_settings()
     redis_conn = Redis.from_url(settings.redis_url)

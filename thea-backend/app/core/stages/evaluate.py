@@ -30,12 +30,12 @@ import uuid
 from dataclasses import dataclass
 from typing import Any
 
-from app.config import cfg
-from app.db import get_service_client
-from app.embeddings import embed_text
-from app.llm import StructuredCallError, call_structured
-from app.models import DistilledPattern
-from app.stages.action import StepOutcome
+from app.infra.config import cfg
+from app.infra.db import get_service_client
+from app.infra.embeddings import embed_text
+from app.infra.llm import StructuredCallError, call_structured
+from app.infra.models import DistilledPattern
+from app.core.stages.action import StepOutcome
 from pydantic import BaseModel
 
 

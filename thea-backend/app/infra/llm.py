@@ -28,7 +28,7 @@ from typing import Any, TypeVar
 import httpx
 from pydantic import BaseModel, ValidationError
 
-from app.config import get_settings
+from app.infra.config import get_settings
 
 logger = logging.getLogger("thea.llm")
 

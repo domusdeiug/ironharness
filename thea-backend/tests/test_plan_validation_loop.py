@@ -14,7 +14,7 @@ import asyncio
 import uuid
 from unittest.mock import MagicMock, patch
 
-from app.models import PlanOutput, PlannedStep, ProfessionRow
+from app.infra.models import PlanOutput, PlannedStep, ProfessionRow
 
 ECHO_PROFESSION_ID = uuid.uuid4()
 REQUEST_ID = uuid.uuid4()
@@ -50,6 +50,7 @@ class FakeSupabaseClient:
 
 async def run_test() -> None:
     from app.tools import load_all_tools
+    from tests.fixtures.echo import tools as _echo_tools  # noqa: F401 -- registers echo.say/echo.always_fail for this test
 
     load_all_tools()
 
@@ -102,10 +103,10 @@ async def run_test() -> None:
             assert "invalid tool_args" in user_prompt  # second attempt must include the re-prompt
             return good_plan
 
-    with patch("app.stages.plan.get_service_client", return_value=fake_client), \
-         patch("app.stages.plan.call_structured", side_effect=fake_call_structured):
+    with patch("app.core.stages.plan.get_service_client", return_value=fake_client), \
+         patch("app.core.stages.plan.call_structured", side_effect=fake_call_structured):
 
-        from app.stages.plan import create_plan
+        from app.core.stages.plan import create_plan
 
         steps = await create_plan(
             request_id=REQUEST_ID,

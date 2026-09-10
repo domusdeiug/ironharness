@@ -32,10 +32,10 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from app.config import cfg
-from app.db import get_service_client
-from app.llm import StructuredCallError, call_structured
-from app.models import PlanOutput, PlanStepRow, ProfessionRow
+from app.infra.config import cfg
+from app.infra.db import get_service_client
+from app.infra.llm import StructuredCallError, call_structured
+from app.infra.models import PlanOutput, PlanStepRow, ProfessionRow
 from app.tools.registry import ToolNotFoundError, validate_tool_args
 
 logger = logging.getLogger("thea.plan")

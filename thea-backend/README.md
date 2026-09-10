@@ -90,7 +90,7 @@ docker-compose.yml    # api + worker + redis for local dev
   (network/non-2xx/timeout), never schema-validation failures. A model
   responding with malformed structured output is usually a prompting
   problem, and blindly retrying it against a second model risks masking a
-  real bug as "flaky provider." See `app/llm.py`'s module docstring.
+  real bug as "flaky provider." See `app/infra/llm.py`'s module docstring.
 - **`BlockingStepFailed` carries `partial_outcomes`**: I initially wrote
   the orchestrator with a bug where successful-steps-before-a-blocking-
   failure would be silently dropped from `all_outcomes` (and therefore
@@ -126,7 +126,7 @@ These are flagged in `config.example.yaml` comments too:
    actually invoke `web_search` mid-diagnosis. The budget accounting
    (`max_diagnostic_calls_per_step`) is enforced in code and ready for this;
    wiring the actual tool-use turn is the remaining piece.
-4. **`web_search` has no real provider wired up** — `app/tools/shared/web_search.py`
+4. **`web_search` has no real provider wired up** — `app/professions/_shared_tools/web_search.py`
    is a structured stub that returns `not_implemented` until a provider
    (Bing/Brave/Serper/etc.) is chosen and `WEB_SEARCH_API_KEY` means
    something concrete.

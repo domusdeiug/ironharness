@@ -19,12 +19,14 @@ import uuid
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from app.db import get_service_client
-from app.stages.evaluate import record_explicit_feedback
-from app.tools import load_all_tools
+from app.infra.db import get_service_client
+from app.core.stages.evaluate import record_explicit_feedback
 from app.worker import enqueue_pipeline_job
 
-load_all_tools()
+# Importing app.worker above already triggers load_all_tools() and
+# sync_professions_to_db() as import-time side effects (see app/worker.py)
+# -- no need to call them again here. Both processes end up in sync
+# regardless of which one starts first, since upserts are idempotent.
 
 app = FastAPI(title="Thea Harness API", version="0.1.0")
 

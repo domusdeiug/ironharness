@@ -41,7 +41,7 @@ def test_web_search_malformed_args_rejected() -> None:
 def test_web_search_not_configured_without_key() -> None:
     os.environ.pop("WEB_SEARCH_API_KEY", None)
     os.environ.setdefault("FILES_SANDBOX_ROOT", tempfile.mkdtemp())
-    from app.config import get_settings
+    from app.infra.config import get_settings
 
     get_settings.cache_clear()
     args = validate_tool_args("web_search", {"query": "thea harness"})
@@ -61,7 +61,7 @@ def test_web_extract_malformed_args_rejected() -> None:
 def test_files_round_trip() -> None:
     with tempfile.TemporaryDirectory() as sandbox_root:
         os.environ["FILES_SANDBOX_ROOT"] = sandbox_root
-        from app.config import get_settings
+        from app.infra.config import get_settings
 
         get_settings.cache_clear()
 
@@ -95,7 +95,7 @@ def test_files_round_trip() -> None:
 
 def test_files_not_configured_without_sandbox_root() -> None:
     os.environ.pop("FILES_SANDBOX_ROOT", None)
-    from app.config import get_settings
+    from app.infra.config import get_settings
 
     get_settings.cache_clear()
 
@@ -112,7 +112,7 @@ def test_app_boots_without_files_sandbox_root() -> None:
     being optional. Only supabase_url/openrouter_api_key/etc should be
     whole-app-blocking required fields."""
     os.environ.pop("FILES_SANDBOX_ROOT", None)
-    from app.config import get_settings
+    from app.infra.config import get_settings
 
     get_settings.cache_clear()
     settings = get_settings()  # must not raise
@@ -122,7 +122,7 @@ def test_app_boots_without_files_sandbox_root() -> None:
 def test_files_read_file_not_found() -> None:
     with tempfile.TemporaryDirectory() as sandbox_root:
         os.environ["FILES_SANDBOX_ROOT"] = sandbox_root
-        from app.config import get_settings
+        from app.infra.config import get_settings
 
         get_settings.cache_clear()
 
@@ -135,7 +135,7 @@ def test_files_read_file_not_found() -> None:
 def test_files_sandbox_escape_rejected() -> None:
     with tempfile.TemporaryDirectory() as sandbox_root:
         os.environ["FILES_SANDBOX_ROOT"] = sandbox_root
-        from app.config import get_settings
+        from app.infra.config import get_settings
 
         get_settings.cache_clear()
 
@@ -153,7 +153,7 @@ def test_files_sandbox_escape_rejected() -> None:
 def test_files_patch_no_match_is_retryable() -> None:
     with tempfile.TemporaryDirectory() as sandbox_root:
         os.environ["FILES_SANDBOX_ROOT"] = sandbox_root
-        from app.config import get_settings
+        from app.infra.config import get_settings
 
         get_settings.cache_clear()
 
@@ -177,7 +177,7 @@ def test_vision_analyze_malformed_args_rejected() -> None:
 def test_vision_analyze_sandbox_escape_rejected() -> None:
     with tempfile.TemporaryDirectory() as sandbox_root:
         os.environ["FILES_SANDBOX_ROOT"] = sandbox_root
-        from app.config import get_settings
+        from app.infra.config import get_settings
 
         get_settings.cache_clear()
 
@@ -190,7 +190,7 @@ def test_vision_analyze_sandbox_escape_rejected() -> None:
 def test_vision_analyze_local_not_found() -> None:
     with tempfile.TemporaryDirectory() as sandbox_root:
         os.environ["FILES_SANDBOX_ROOT"] = sandbox_root
-        from app.config import get_settings
+        from app.infra.config import get_settings
 
         get_settings.cache_clear()
 

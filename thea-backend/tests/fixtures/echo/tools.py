@@ -1,20 +1,22 @@
 """
-`echo` profession — a deliberately trivial, deterministic profession used
-to exercise the full pipeline (classify -> plan -> act -> synthesize ->
-evaluate) end to end without depending on any real external integration.
-Seed this profession's row via `scripts/seed_professions.py`.
+`echo` -- a deliberately trivial, deterministic test fixture used to
+exercise the full pipeline (classify -> plan -> act -> synthesize ->
+evaluate) end to end without depending on any real external integration
+or any real profession's tools.
 
-Not meant to ship to real users; useful as a smoke test and as a template
-for the shape a real profession module takes: a `tools.py` that registers
-its tools on import, args schemas with real validation, and a `seed.py`
-(or entry in the seed script) describing the profession row.
+Lives under tests/fixtures rather than app/professions: it is not a real
+profession, is never seeded into the `professions` table, and must never
+be reachable by a real user's request. Tests that need it import this
+module directly to trigger its register_tool() calls, rather than relying
+on app.tools.load_all_tools()'s scan of app/professions/, which
+intentionally does not look here.
 """
 
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from app.models import ToolExecutionResult
+from app.infra.models import ToolExecutionResult
 from app.tools.registry import register_tool
 
 

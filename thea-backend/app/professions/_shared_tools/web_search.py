@@ -29,7 +29,7 @@ from __future__ import annotations
 import httpx
 from pydantic import BaseModel, Field
 
-from app.models import ToolExecutionResult
+from app.infra.models import ToolExecutionResult
 from app.tools.registry import register_tool
 
 _TAVILY_SEARCH_URL = "https://api.tavily.com/search"
@@ -55,7 +55,7 @@ def _parse_tavily_results(payload: dict, max_results: int) -> list[dict]:
 
 
 async def _search(args: WebSearchArgs) -> ToolExecutionResult:
-    from app.config import get_settings
+    from app.infra.config import get_settings
 
     settings = get_settings()
     if not settings.web_search_api_key:

@@ -35,7 +35,7 @@ from typing import Awaitable, Callable
 
 from pydantic import BaseModel
 
-from app.models import ToolExecutionResult
+from app.infra.models import ToolExecutionResult
 
 
 @dataclass(frozen=True)

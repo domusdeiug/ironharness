@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import httpx
 
-from app.config import get_settings
+from app.infra.config import get_settings
 
 EMBEDDING_DIM = 1024
 _EMBEDDING_MODEL = "baai/bge-m3"

@@ -56,7 +56,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from app.models import ToolExecutionResult
+from app.infra.models import ToolExecutionResult
 from app.tools.registry import register_tool
 
 
@@ -72,7 +72,7 @@ class _NotConfiguredError(Exception):
 
 
 def _sandbox_root() -> Path:
-    from app.config import get_settings
+    from app.infra.config import get_settings
 
     root = get_settings().files_sandbox_root
     if not root:

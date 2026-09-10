@@ -11,7 +11,7 @@ matters because a step that just wrote or downloaded an image via
 paths are read and re-encoded as a base64 data: URI before being handed
 to the model; nothing is ever uploaded anywhere else.
 
-Reuses `app.llm.call_vision` for the actual model call rather than
+Reuses `app.infra.llm.call_vision` for the actual model call rather than
 opening a second HTTP client — see that function's docstring. If
 `app/llm.py` grows a structured-output multimodal path later, this tool
 should move to it, but today's ask (a description, optionally answering
@@ -42,9 +42,9 @@ from pathlib import Path
 import httpx
 from pydantic import BaseModel, Field
 
-from app.config import cfg
-from app.llm import StructuredCallError, call_vision
-from app.models import ToolExecutionResult
+from app.infra.config import cfg
+from app.infra.llm import StructuredCallError, call_vision
+from app.infra.models import ToolExecutionResult
 from app.tools.registry import register_tool
 
 _LOCAL_SCHEMES = ("http://", "https://", "data:")
@@ -69,7 +69,7 @@ def _read_local_image_as_data_uri_sync(image_url: str) -> tuple[str | None, str]
     """Returns (data_uri_or_None, error_message). Resolves image_url against
     FILES_SANDBOX_ROOT the same way app.professions.files.tools does, so a
     path outside that root is rejected the same way it would be there."""
-    from app.config import get_settings
+    from app.infra.config import get_settings
 
     settings = get_settings()
     if not settings.files_sandbox_root:

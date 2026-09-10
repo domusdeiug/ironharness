@@ -38,8 +38,8 @@ from typing import Literal, Protocol
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.config import get_settings
-from app.models import ToolExecutionResult
+from app.infra.config import get_settings
+from app.infra.models import ToolExecutionResult
 from app.tools.registry import register_tool
 
 

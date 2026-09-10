@@ -36,7 +36,7 @@ from pydantic import BaseModel, Field
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 
-from app.models import ToolExecutionResult
+from app.infra.models import ToolExecutionResult
 from app.tools.registry import register_tool
 
 _STRIP_TAGS = ("script", "style", "nav", "footer", "header", "noscript")

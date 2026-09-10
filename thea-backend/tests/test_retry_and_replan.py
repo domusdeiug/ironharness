@@ -12,7 +12,7 @@ import asyncio
 import uuid
 from unittest.mock import MagicMock, patch
 
-from app.models import (
+from app.infra.models import (
     ClassificationOutput,
     PlanOutput,
     PlannedStep,
@@ -110,6 +110,7 @@ class FakeSupabaseClient:
 
 async def run_test() -> None:
     from app.tools import load_all_tools
+    from tests.fixtures.echo import tools as _echo_tools  # noqa: F401 -- registers echo.say/echo.always_fail for this test
 
     load_all_tools()
 
@@ -172,19 +173,19 @@ async def run_test() -> None:
     async def fake_embed_text(text: str):
         return [0.0] * 1024
 
-    with patch("app.stages.classify.get_service_client", return_value=fake_client), \
-         patch("app.stages.plan.get_service_client", return_value=fake_client), \
-         patch("app.stages.action.get_service_client", return_value=fake_client), \
-         patch("app.stages.synthesize.get_service_client", return_value=fake_client), \
-         patch("app.stages.evaluate.get_service_client", return_value=fake_client), \
-         patch("app.orchestrator.get_service_client", return_value=fake_client), \
-         patch("app.stages.classify.call_structured", side_effect=fake_call_structured), \
-         patch("app.stages.plan.call_structured", side_effect=fake_call_structured), \
-         patch("app.stages.action.call_structured", side_effect=fake_call_structured), \
-         patch("app.stages.synthesize.call_text", side_effect=fake_call_text), \
-         patch("app.stages.evaluate.embed_text", side_effect=fake_embed_text):
+    with patch("app.core.stages.classify.get_service_client", return_value=fake_client), \
+         patch("app.core.stages.plan.get_service_client", return_value=fake_client), \
+         patch("app.core.stages.action.get_service_client", return_value=fake_client), \
+         patch("app.core.stages.synthesize.get_service_client", return_value=fake_client), \
+         patch("app.core.stages.evaluate.get_service_client", return_value=fake_client), \
+         patch("app.core.orchestrator.get_service_client", return_value=fake_client), \
+         patch("app.core.stages.classify.call_structured", side_effect=fake_call_structured), \
+         patch("app.core.stages.plan.call_structured", side_effect=fake_call_structured), \
+         patch("app.core.stages.action.call_structured", side_effect=fake_call_structured), \
+         patch("app.core.stages.synthesize.call_text", side_effect=fake_call_text), \
+         patch("app.core.stages.evaluate.embed_text", side_effect=fake_embed_text):
 
-        from app.orchestrator import process_request
+        from app.core.orchestrator import process_request
 
         await process_request(request_id=REQUEST_ID)
 

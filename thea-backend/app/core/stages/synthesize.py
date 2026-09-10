@@ -14,10 +14,10 @@ import logging
 import uuid
 from typing import Any
 
-from app.config import cfg
-from app.db import get_service_client
-from app.llm import call_text
-from app.stages.action import StepOutcome
+from app.infra.config import cfg
+from app.infra.db import get_service_client
+from app.infra.llm import call_text
+from app.core.stages.action import StepOutcome
 
 logger = logging.getLogger("thea.synthesize")
 
