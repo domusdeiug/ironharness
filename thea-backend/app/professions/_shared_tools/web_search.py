@@ -10,6 +10,15 @@ app/llm.py). Swapping providers later only means rewriting `_search`'s
 request/parse logic — the args schema, tool name, and registration are
 provider-agnostic on purpose.
 
+Requests Tavily's raw (full-page) content per result via
+`include_raw_content`, not just the short snippet — this is deliberate:
+it means most open-ended research requests can be answered from a single
+web_search call, without a follow-up web_extract step that would need a
+real URL to target, which the planner cannot know before web_search has
+actually run (see the profession's skill_prompt for the resulting rule:
+web_extract is for a URL already in hand, not for "reading more" after a
+search).
+
 error_type choices (see app/stages/action.py's _RETRYABLE_ERROR_TYPES /
 _TERMINAL_ERROR_TYPES):
   - "not_configured" — WEB_SEARCH_API_KEY unset. Not fixable by adjusting
@@ -49,6 +58,11 @@ def _parse_tavily_results(payload: dict, max_results: int) -> list[dict]:
                 "title": item.get("title", ""),
                 "url": item.get("url", ""),
                 "snippet": item.get("content", ""),
+                # Full page content, requested via include_raw_content below.
+                # Present so most requests are answerable from web_search
+                # alone, without a follow-up web_extract step guessing at
+                # which result's URL is worth reading in full.
+                "content": item.get("raw_content", ""),
             }
         )
     return parsed
@@ -74,7 +88,7 @@ async def _search(args: WebSearchArgs) -> ToolExecutionResult:
         "Content-Type": "application/json",
         "Authorization": f"Bearer {settings.web_search_api_key}",
     }
-    body = {"query": args.query, "max_results": args.max_results}
+    body = {"query": args.query, "max_results": args.max_results, "include_raw_content": True}
 
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -108,11 +122,20 @@ register_tool(
     name="web_search",
     args_schema=WebSearchArgs,
     handler=_search,
-    description="Search the web for current information relevant to a query.",
+    description=(
+        "Search the web for current information relevant to a query. Each "
+        "result includes the page's real content, not just a snippet -- "
+        "this is almost always sufficient on its own; do not follow up "
+        "with web_extract unless a specific URL was already given to you "
+        "directly or there is need to check a url from these results."
+    ),
     skill_doc=(
-        "web_search(query, max_results=5): returns a list of {title, url, snippet}. "
-        "Use short, specific queries (3-6 words). Not a browser — cannot fetch full "
-        "page content, only search-result snippets. Use web_extract on a result's url "
-        "to get the full page content."
+        "web_search(query, max_results=5): returns a list of {title, url, snippet, "
+        "content}. `content` is the real page content (may be empty for a small "
+        "number of results the provider couldn't fetch in full -- the snippet still "
+        "covers those). Use short, specific queries (3-6 words). This is the "
+        "default and usually only tool needed for open-ended research -- see "
+        "web_extract's own doc for the narrow case where that tool is actually "
+        "appropriate."
     ),
 )
