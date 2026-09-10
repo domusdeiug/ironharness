@@ -117,13 +117,20 @@ register_tool(
     name="web_extract",
     args_schema=WebExtractArgs,
     handler=_extract,
-    description="Fetch a URL (webpage or PDF) and return its content as plain text.",
+    description=(
+        "Requires a real, already-known url. DO NOT MAKE UP A URL"
+        "Fetch a URL (webpage or PDF) and return its content as plain text. "
+        "For a URL already known before and provided before planning; can be given directly by the "
+        "user, or named in a document already in hand."
+    ),
     skill_doc=(
         "web_extract(url, max_chars=5000) -> {url, content_type: 'html'|'pdf', "
         "text, truncated: bool}. Converts the page to plain text (markup stripped) "
         "or extracts text from a PDF. Result is capped at max_chars — truncated=true "
         "means more content exists beyond what was returned; re-call with a higher "
         "max_chars if the whole document is needed. A 404 fails with "
-        "error_type=not_found (not retryable); other failures are retryable."
+        "error_type=not_found (not retryable); other failures are retryable. "
+        "Requires a real, already-known url -- web_search already returns full "
+        "content per result, so don't plan this as a follow-up to a search."
     ),
 )
