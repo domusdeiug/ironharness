@@ -101,8 +101,18 @@ async def process_request(*, request_id: uuid.UUID) -> None:
         return
 
     profession_ids = _persist_classifications(request_id, classification.selections, classification.professions_by_name)
-    professions = list(classification.professions_by_name.values())
-    professions_by_name = classification.professions_by_name
+
+    # classification.professions_by_name is the FULL active catalog (kept
+    # around only so classify_request could validate selections against it).
+    # Downstream stages must only ever see the profession(s) the model
+    # actually selected — passing the whole catalog here is what silently
+    # re-inflates PLAN's tool-schema prompt back to "every tool in the
+    # system" regardless of how well classification narrowed things down.
+    selected_names = {sel.profession_name for sel in classification.selections}
+    professions_by_name = {
+        name: prof for name, prof in classification.professions_by_name.items() if name in selected_names
+    }
+    professions = list(professions_by_name.values())
 
     # ---- Stage 2: PLAN ----
     _set_status(request_id, RequestStatus.planning)
